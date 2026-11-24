@@ -32,8 +32,14 @@ export default function Performance() {
 
   useEffect(() => {
     api.get('/students').then(r => setStudents(r.data));
-    api.get('/performance').then(r => setRecords(r.data));
-    // Build subject list from syllabus so it reflects what the school actually teaches
+    api.get('/performance').then(r => {
+      setRecords(r.data);
+      // Default to the first subject that actually has marks, so the table opens
+      // showing every student's marks in one subject (not one subject per row).
+      const subs = [...new Set(r.data.map(x => x.subject).filter(Boolean))].sort();
+      if (subs.length) setFilterSubject(prev => prev || subs[0]);
+    });
+    // Build the entry-form subject list from syllabus (what the school teaches)
     api.get('/syllabus').then(r => {
       const fromDb = [...new Set(r.data.map(s => s.subject).filter(Boolean))].sort();
       if (fromDb.length) setSubjects([...new Set([...fromDb, ...DEFAULT_SUBJECTS])]);
@@ -75,6 +81,32 @@ export default function Performance() {
   const avg = filtered.length
     ? Math.round(filtered.reduce((s,r) => s + r.score/r.maxScore*100, 0) / filtered.length)
     : 0;
+
+  // Subjects that actually have marks recorded — drives the filter dropdown
+  const subjectOptions = [...new Set(records.map(r => r.subject).filter(Boolean))].sort();
+
+  // Exam columns present in the data, ordered by the known exam sequence
+  const examsInData = [...new Set(filtered.map(r => r.testName).filter(Boolean))];
+  const examCols = [...EXAMS.filter(e => examsInData.includes(e)),
+                    ...examsInData.filter(e => !EXAMS.includes(e))];
+
+  // One row per student+subject; each row holds a record per exam
+  const rowsMap = new Map();
+  filtered.forEach(r => {
+    const key = `${r.student?.id}|${r.subject}`;
+    if (!rowsMap.has(key)) rowsMap.set(key, { student: r.student, subject: r.subject, exams: {} });
+    rowsMap.get(key).exams[r.testName] = r;
+  });
+  const matrixRows = [...rowsMap.values()].sort((a, b) =>
+    (a.student?.className || '').localeCompare(b.student?.className || '')
+    || (a.student?.name || '').localeCompare(b.student?.name || '')
+    || a.subject.localeCompare(b.subject));
+
+  const rowAvg = (row) => {
+    const recs = Object.values(row.exams);
+    if (!recs.length) return null;
+    return Math.round(recs.reduce((s, r) => s + r.score / r.maxScore * 100, 0) / recs.length);
+  };
 
   return (
     <div>
@@ -133,15 +165,16 @@ export default function Performance() {
           {/* Right: Table */}
           <div style={styles.tableCard}>
             <div style={styles.filterRow}>
+              <label style={styles.filterLabel}>Subject:</label>
+              <select style={styles.filterSel} value={filterSubject}
+                onChange={e => setFilterSubject(e.target.value)}>
+                <option value="">All Subjects</option>
+                {subjectOptions.map(s => <option key={s}>{s}</option>)}
+              </select>
               <select style={styles.filterSel} value={filterClass}
                 onChange={e => setFilterClass(e.target.value)}>
                 <option value="">All Classes</option>
                 {classes.map(c => <option key={c}>{c}</option>)}
-              </select>
-              <select style={styles.filterSel} value={filterSubject}
-                onChange={e => setFilterSubject(e.target.value)}>
-                <option value="">All Subjects</option>
-                {subjects.map(s => <option key={s}>{s}</option>)}
               </select>
               <select style={styles.filterSel} value={filterStudent}
                 onChange={e => setFilterStudent(e.target.value)}>
@@ -153,40 +186,47 @@ export default function Performance() {
             <div style={styles.tableWrap}>
               <table style={styles.table}>
                 <thead><tr style={styles.head}>
-                  <th style={styles.th}>Student</th>
+                  <th style={{...styles.th, ...styles.stickyCol}}>Student</th>
                   <th style={styles.th}>Class</th>
                   <th style={styles.th}>Subject</th>
-                  <th style={styles.th}>Exam</th>
-                  <th style={styles.th}>Score</th>
-                  <th style={styles.th}>%</th>
-                  <th style={styles.th}>Grade</th>
-                  {canDelete && <th style={styles.th}>Action</th>}
+                  {examCols.map(ex => <th key={ex} style={{...styles.th, textAlign:'center'}}>{ex}</th>)}
+                  <th style={{...styles.th, textAlign:'center'}}>Average</th>
                 </tr></thead>
                 <tbody>
-                  {filtered.map(r => {
-                    const pct = Math.round(r.score / r.maxScore * 100);
-                    const g   = grade(pct);
+                  {matrixRows.map(row => {
+                    const ravg = rowAvg(row);
+                    const rg = ravg != null ? grade(ravg) : null;
                     return (
-                      <tr key={r.id}>
-                        <td style={styles.td}>{r.student?.name}</td>
-                        <td style={styles.td}>{r.student?.className}</td>
-                        <td style={styles.td}>{r.subject}</td>
-                        <td style={styles.td}>{r.testName}</td>
-                        <td style={styles.td}>{r.score}/{r.maxScore}</td>
-                        <td style={styles.td}>{pct}%</td>
-                        <td style={styles.td}>
-                          <span style={{...styles.gradeBadge, background:g.bg, color:g.color}}>{g.letter}</span>
+                      <tr key={`${row.student?.id}|${row.subject}`}>
+                        <td style={{...styles.td, ...styles.stickyCol}}><strong>{row.student?.name}</strong></td>
+                        <td style={styles.td}><span style={styles.classBadge}>{row.student?.className}</span></td>
+                        <td style={styles.td}>{row.subject}</td>
+                        {examCols.map(ex => {
+                          const rec = row.exams[ex];
+                          if (!rec) return <td key={ex} style={{...styles.td, textAlign:'center', color:'#ccc'}}>—</td>;
+                          const pct = Math.round(rec.score / rec.maxScore * 100);
+                          const g = grade(pct);
+                          return (
+                            <td key={ex} style={{...styles.td, textAlign:'center'}}>
+                              <span style={{ color:g.color, fontWeight:700 }}>{pct}%</span>
+                              <span style={{ fontSize:11, color:g.color, marginLeft:4 }}>{g.letter}</span>
+                              {canDelete && (
+                                <button style={styles.cellDel} title="Delete this record"
+                                  onClick={() => handleDelete(rec.id)}>×</button>
+                              )}
+                            </td>
+                          );
+                        })}
+                        <td style={{...styles.td, textAlign:'center'}}>
+                          {ravg != null
+                            ? <span style={{...styles.gradeBadge, background:rg.bg, color:rg.color}}>{ravg}%</span>
+                            : <span style={{color:'#ccc'}}>—</span>}
                         </td>
-                        {canDelete && (
-                          <td style={styles.td}>
-                            <button style={styles.delBtn} onClick={() => handleDelete(r.id)}>Delete</button>
-                          </td>
-                        )}
                       </tr>
                     );
                   })}
-                  {filtered.length === 0 && (
-                    <tr><td colSpan={canDelete ? 8 : 7} style={{...styles.td, textAlign:'center', color:'#999', padding:32}}>
+                  {matrixRows.length === 0 && (
+                    <tr><td colSpan={examCols.length + 4} style={{...styles.td, textAlign:'center', color:'#999', padding:32}}>
                       No records found
                     </td></tr>
                   )}
@@ -225,11 +265,15 @@ const styles = {
   btn: { background:'#1a237e', color:'#fff', border:'none', borderRadius:6, padding:'11px 28px',
          fontSize:13, cursor:'pointer', marginTop:4, width:'100%' },
   filterRow: { display:'flex', gap:10, marginBottom:14, flexWrap:'wrap', alignItems:'center' },
+  filterLabel: { fontSize:13, fontWeight:600, color:'#333' },
   filterSel: { padding:'8px 10px', border:'1px solid #ccc', borderRadius:5, fontSize:13 },
   avgBadge: { marginLeft:'auto', background:'#1a237e', color:'#fff', padding:'6px 14px', borderRadius:6, fontSize:13, fontWeight:600 },
-  tableWrap: { maxHeight:580, overflowY:'auto' },
-  table: { width:'100%', borderCollapse:'collapse', fontSize:13 },
-  head: { background:'#e8eaf6', position:'sticky', top:0 },
-  th: { padding:'10px 12px', fontWeight:600, color:'#1a237e', textAlign:'left', borderBottom:'2px solid #c5cae9' },
+  tableWrap: { maxHeight:580, overflowY:'auto', overflowX:'auto' },
+  table: { width:'100%', borderCollapse:'collapse', fontSize:13, minWidth:620 },
+  head: { background:'#e8eaf6', position:'sticky', top:0, zIndex:2 },
+  th: { padding:'10px 12px', fontWeight:600, color:'#1a237e', textAlign:'left', borderBottom:'2px solid #c5cae9', whiteSpace:'nowrap' },
   td: { padding:'9px 12px', borderBottom:'1px solid #eee' },
+  stickyCol: { position:'sticky', left:0, background:'#fff', zIndex:1 },
+  classBadge: { background:'#e8eaf6', color:'#1a237e', padding:'2px 8px', borderRadius:10, fontSize:11, fontWeight:600 },
+  cellDel: { marginLeft:6, background:'none', border:'none', color:'#c62828', cursor:'pointer', fontSize:14, fontWeight:700, lineHeight:1, padding:0 },
 };

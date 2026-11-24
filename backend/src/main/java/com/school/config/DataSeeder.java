@@ -109,7 +109,22 @@ public class DataSeeder implements CommandLineRunner {
             {"Ojas Mehta","Yash Mehta","70 Bodakdev, Ahmedabad","9th - 74%"}
         };
 
+        // Class 8 students → came from Class 7
+        String[][] cls8B = {
+            {"Aryan Kapoor","Vijay Kapoor","12 Lajpat Nagar, Delhi","7th - 80%"},
+            {"Bhoomi Shah","Nilesh Shah","34 Satellite, Ahmedabad","7th - 88%"},
+            {"Chirag Rana","Mahesh Rana","56 Model Town, Jalandhar","7th - 74%"},
+            {"Diya Kulkarni","Prasad Kulkarni","23 Kothrud, Pune","7th - 91%"},
+            {"Eshan Ghosh","Tapas Ghosh","78 Behala, Kolkata","7th - 69%"},
+            {"Falguni Rao","Srinivas Rao","34 Jubilee Hills, Hyderabad","7th - 85%"},
+            {"Gautam Menon","Ravi Menon","67 Adyar, Chennai","7th - 77%"},
+            {"Hina Sheikh","Aslam Sheikh","89 Charminar, Hyderabad","7th - 93%"},
+            {"Ivan Dsouza","Peter Dsouza","101 Bandra, Mumbai","7th - 72%"},
+            {"Jiya Agarwal","Mohan Agarwal","14 Civil Lines, Jaipur","7th - 90%"}
+        };
+
         List<Student> students8A  = seedStudents(cls8A,  "8A",  "A", clerk1, LocalDate.of(2026,6,1));
+        List<Student> students8B  = seedStudents(cls8B,  "8B",  "B", clerk2, LocalDate.of(2026,6,1));
         List<Student> students9A  = seedStudents(cls9A,  "9A",  "A", clerk1, LocalDate.of(2026,6,1));
         List<Student> students9B  = seedStudents(cls9B,  "9B",  "B", clerk2, LocalDate.of(2026,6,2));
         List<Student> students10A = seedStudents(cls10A, "10A", "A", clerk2, LocalDate.of(2026,6,2));
@@ -120,8 +135,8 @@ public class DataSeeder implements CommandLineRunner {
         String[] feeTypes = {"Tuition Fee","Exam Fee","Library Fee","Sports Fee","Lab Fee"};
         double[] feeAmts  = {5000, 1500, 500, 800, 1200};
         List<Student> allStudents = new ArrayList<>();
-        allStudents.addAll(students8A); allStudents.addAll(students9A); allStudents.addAll(students9B);
-        allStudents.addAll(students10A); allStudents.addAll(students10B);
+        allStudents.addAll(students8A); allStudents.addAll(students8B); allStudents.addAll(students9A);
+        allStudents.addAll(students9B); allStudents.addAll(students10A); allStudents.addAll(students10B);
 
         for (Student s : allStudents) {
             // Tuition fee — everyone pays
@@ -134,56 +149,62 @@ public class DataSeeder implements CommandLineRunner {
             }
         }
 
-        // ── Syllabus ─────────────────────────────────────────────────────────
-        Map<String,String> mathSyl = Map.of(
-            "8A","Real Numbers, Polynomials, Linear Equations, Quadrilaterals, Area, Circles, Constructions, Trigonometry, Statistics",
-            "9A","Number Systems, Polynomials, Coordinate Geometry, Linear Equations, Lines and Angles, Triangles, Quadrilaterals, Circles",
-            "9B","Number Systems, Polynomials, Coordinate Geometry, Linear Equations, Lines and Angles, Triangles, Quadrilaterals, Circles",
-            "10A","Real Numbers, Polynomials, Pair of Linear Equations, Quadratic Equations, AP, Triangles, Coordinate Geometry, Trigonometry, Circles, Areas",
-            "10B","Real Numbers, Polynomials, Pair of Linear Equations, Quadratic Equations, AP, Triangles, Coordinate Geometry, Trigonometry, Circles, Areas"
-        );
-        Map<String,String> sciSyl = Map.of(
-            "8A","Crop Production, Microorganisms, Materials, Coal and Petroleum, Combustion, Cell, Reproduction, Force, Friction, Sound, Chemical Effects",
-            "9A","Matter, Is Matter Around Us Pure, Atoms and Molecules, Cell, Tissues, Motion, Force and Laws, Gravitation, Work and Energy, Sound",
-            "9B","Matter, Is Matter Around Us Pure, Atoms and Molecules, Cell, Tissues, Motion, Force and Laws, Gravitation, Work and Energy, Sound",
-            "10A","Chemical Reactions, Acids Bases Salts, Metals, Carbon, Periodic Classification, Life Processes, Control and Coordination, Reproduction, Heredity, Light, Electricity, Magnetic Effects",
-            "10B","Chemical Reactions, Acids Bases Salts, Metals, Carbon, Periodic Classification, Life Processes, Control and Coordination, Reproduction, Heredity, Light, Electricity, Magnetic Effects"
-        );
-        Map<String,String> engSyl = Map.of(
-            "8A","Honeydew: The Best Christmas Present, The Tsunami, Glimpses of the Past; It So Happened; Grammar: Tenses, Voice, Reported Speech, Clauses",
-            "9A","Beehive: The Fun They Had, The Sound of Music, The Little Girl; Moments; Grammar: Tenses, Modals, Subject-Verb, Determiners",
-            "9B","Beehive: The Fun They Had, The Sound of Music, The Little Girl; Moments; Grammar: Tenses, Modals, Subject-Verb, Determiners",
-            "10A","First Flight: A Letter to God, Nelson Mandela, Two Stories about Flying; Footprints; Grammar: Gap Filling, Editing, Reordering",
-            "10B","First Flight: A Letter to God, Nelson Mandela, Two Stories about Flying; Footprints; Grammar: Gap Filling, Editing, Reordering"
-        );
-        Map<String,String> hinSyl = Map.of(
-            "8A","वसंत: ध्वनि, लाख की चूड़ियाँ, बस की यात्रा; व्याकरण: संधि, समास, अलंकार, रस",
-            "9A","क्षितिज: दो बैलों की कथा, ल्हासा की ओर, उपभोक्तावाद; व्याकरण: शब्द, पद, वाक्य, अलंकार, छंद",
-            "9B","क्षितिज: दो बैलों की कथा, ल्हासा की ओर, उपभोक्तावाद; व्याकरण: शब्द, पद, वाक्य, अलंकार, छंद",
-            "10A","क्षितिज-2: सूरदास, तुलसीदास, देव; व्याकरण: पद परिचय, रचना के आधार पर वाक्य रूपांतरण",
-            "10B","क्षितिज-2: सूरदास, तुलसीदास, देव; व्याकरण: पद परिचय, रचना के आधार पर वाक्य रूपांतरण"
-        );
-        Map<String,String> sstSyl = Map.of(
-            "8A","How, When and Where; From Trade to Territory; Ruling the Countryside; Geography: Resources, Land, Soil, Water, Natural Vegetation; Civics: Constitution",
-            "9A","French Revolution, Socialism in Europe, Nazism, Forest Society, Pastoralists; Geography: India Size and Location, Physical Features; Civics: Democracy",
-            "9B","French Revolution, Socialism in Europe, Nazism, Forest Society, Pastoralists; Geography: India Size and Location, Physical Features; Civics: Democracy",
-            "10A","Nationalism in Europe, Nationalism in India, The Making of a Global World; Geography: Resources, Forest, Water, Agriculture; Civics: Power Sharing",
-            "10B","Nationalism in Europe, Nationalism in India, The Making of a Global World; Geography: Resources, Forest, Water, Agriculture; Civics: Power Sharing"
-        );
-        String[] clss = {"8A","9A","9B","10A","10B"};
+        // ── Syllabus — 9 subjects per class, grade-appropriate content ───────
+        String[] clss = {"8A","8B","9A","9B","10A","10B"};
+        // Each subject carries content for grades 8, 9 and 10; the right one is
+        // chosen per class from the class's grade number.
+        Object[][] syllabusSubjects = {
+            {"Mathematics", t1, Map.of(
+                "8","Rational Numbers, Linear Equations in One Variable, Understanding Quadrilaterals, Data Handling, Squares and Square Roots, Cubes and Cube Roots, Comparing Quantities, Algebraic Expressions, Mensuration, Exponents and Powers, Direct and Inverse Proportions, Factorisation",
+                "9","Number Systems, Polynomials, Coordinate Geometry, Linear Equations in Two Variables, Euclid's Geometry, Lines and Angles, Triangles, Quadrilaterals, Areas of Parallelograms, Circles, Constructions, Heron's Formula, Surface Areas and Volumes, Statistics, Probability",
+                "10","Real Numbers, Polynomials, Pair of Linear Equations, Quadratic Equations, Arithmetic Progressions, Triangles, Coordinate Geometry, Introduction to Trigonometry, Applications of Trigonometry, Circles, Areas Related to Circles, Surface Areas and Volumes, Statistics, Probability")},
+            {"Hindi", t4, Map.of(
+                "8","वसंत भाग-3: ध्वनि, लाख की चूड़ियाँ, बस की यात्रा, दीवानों की हस्ती, चिट्ठियों की अनूठी दुनिया; व्याकरण: संधि, समास, अलंकार, वाक्य भेद",
+                "9","क्षितिज भाग-1: दो बैलों की कथा, ल्हासा की ओर, उपभोक्तावाद की संस्कृति; कृतिका; व्याकरण: शब्द एवं पद, उपसर्ग-प्रत्यय, अलंकार, छंद",
+                "10","क्षितिज भाग-2: सूरदास, तुलसीदास, देव, जयशंकर प्रसाद, निराला; कृतिका; व्याकरण: पद परिचय, रचना के आधार पर वाक्य रूपांतरण, समास, मुहावरे")},
+            {"English", t3, Map.of(
+                "8","Honeydew: The Best Christmas Present, The Tsunami, Glimpses of the Past, Bepin Choudhury's Lapse of Memory; It So Happened; Grammar: Tenses, Modals, Voice, Reported Speech; Writing: Letters, Paragraphs",
+                "9","Beehive: The Fun They Had, The Sound of Music, The Little Girl, A Truly Beautiful Mind; Moments; Grammar: Tenses, Modals, Subject-Verb Concord, Determiners; Writing: Descriptive, Story",
+                "10","First Flight: A Letter to God, Nelson Mandela, Two Stories about Flying, From the Diary of Anne Frank; Footprints Without Feet; Grammar: Gap Filling, Editing, Reordering; Writing: Formal Letter, Analytical Paragraph")},
+            {"Geography", t5, Map.of(
+                "8","Resources, Land Soil Water Natural Vegetation and Wildlife Resources, Mineral and Power Resources, Agriculture, Industries, Human Resources",
+                "9","India Size and Location, Physical Features of India, Drainage, Climate, Natural Vegetation and Wildlife, Population",
+                "10","Resources and Development, Forest and Wildlife Resources, Water Resources, Agriculture, Minerals and Energy Resources, Manufacturing Industries, Lifelines of National Economy")},
+            {"History", t5, Map.of(
+                "8","How When and Where, From Trade to Territory, Ruling the Countryside, Tribals Dikus and the Vision of a Golden Age, When People Rebel 1857, Weavers Iron Smelters and Factory Owners, Civilising the Native",
+                "9","The French Revolution, Socialism in Europe and the Russian Revolution, Nazism and the Rise of Hitler, Forest Society and Colonialism, Pastoralists in the Modern World",
+                "10","The Rise of Nationalism in Europe, Nationalism in India, The Making of a Global World, The Age of Industrialisation, Print Culture and the Modern World")},
+            {"Civics", t5, Map.of(
+                "8","The Indian Constitution, Understanding Secularism, Why Do We Need a Parliament, Understanding Laws, Judiciary, Understanding Marginalisation, Public Facilities, Law and Social Justice",
+                "9","What is Democracy Why Democracy, Constitutional Design, Electoral Politics, Working of Institutions, Democratic Rights",
+                "10","Power Sharing, Federalism, Gender Religion and Caste, Political Parties, Outcomes of Democracy")},
+            {"Physics", t2, Map.of(
+                "8","Force and Pressure, Friction, Sound, Chemical Effects of Electric Current, Some Natural Phenomena, Light, Stars and the Solar System",
+                "9","Motion, Force and Laws of Motion, Gravitation, Work and Energy, Sound",
+                "10","Light Reflection and Refraction, The Human Eye and the Colourful World, Electricity, Magnetic Effects of Electric Current, Sources of Energy")},
+            {"Chemistry", t2, Map.of(
+                "8","Synthetic Fibres and Plastics, Materials Metals and Non-Metals, Coal and Petroleum, Combustion and Flame, Pollution of Air and Water",
+                "9","Matter in Our Surroundings, Is Matter Around Us Pure, Atoms and Molecules, Structure of the Atom",
+                "10","Chemical Reactions and Equations, Acids Bases and Salts, Metals and Non-metals, Carbon and its Compounds, Periodic Classification of Elements")},
+            {"Biology", t6, Map.of(
+                "8","Crop Production and Management, Microorganisms Friend and Foe, Conservation of Plants and Animals, Cell Structure and Functions, Reproduction in Animals, Reaching the Age of Adolescence",
+                "9","The Fundamental Unit of Life Cell, Tissues, Improvement in Food Resources, Natural Resources",
+                "10","Life Processes, Control and Coordination, How do Organisms Reproduce, Heredity and Evolution, Our Environment, Management of Natural Resources")}
+        };
         for (String c : clss) {
-            sy(c, "Mathematics",    mathSyl.get(c), t1);
-            sy(c, "Science",        sciSyl.get(c),  t2);
-            sy(c, "English",        engSyl.get(c),  t3);
-            sy(c, "Hindi",          hinSyl.get(c),  t4);
-            sy(c, "Social Studies", sstSyl.get(c),  t5);
+            String grade = c.replaceAll("[^0-9]", "");
+            for (Object[] subj : syllabusSubjects) {
+                @SuppressWarnings("unchecked")
+                Map<String,String> byGrade = (Map<String,String>) subj[2];
+                sy(c, (String) subj[0], byGrade.get(grade), (User) subj[1]);
+            }
         }
 
         // ── Schedule (Mon–Fri, 6 periods each class) ─────────────────────────
         String[] days = {"Monday","Tuesday","Wednesday","Thursday","Friday"};
         Object[][] slots = {
-            {1,"Mathematics",t1}, {2,"Science",t2}, {3,"English",t3},
-            {4,"Hindi",t4}, {5,"Social Studies",t5}, {6,"Computer Science",t6}
+            {1,"Mathematics",t1}, {2,"Physics",t2}, {3,"English",t3},
+            {4,"Hindi",t4}, {5,"History",t5}, {6,"Biology",t6}
         };
         for (String c : clss) {
             for (String day : days) {
@@ -202,10 +223,10 @@ public class DataSeeder implements CommandLineRunner {
             }
         }
 
-        // ── Performance — 3 exam rounds × 3 subjects ─────────────────────────
+        // ── Performance — 3 exam rounds × 9 subjects (matches the syllabus) ──
         String[] exams    = {"Unit Test 1", "Mid Term", "Unit Test 2"};
-        String[] subjects = {"Mathematics", "Science", "English"};
-        User[]   recBy    = {t1, t2, t3};
+        String[] subjects = {"Mathematics","Hindi","English","Geography","History","Civics","Physics","Chemistry","Biology"};
+        User[]   recBy    = {t1, t4, t3, t5, t5, t5, t2, t2, t6};
         for (Student s : allStudents) {
             double base = baseScore(s.getPreviousClassPerformance());
             for (int ei = 0; ei < exams.length; ei++) {
@@ -213,7 +234,7 @@ public class DataSeeder implements CommandLineRunner {
                     double score = Math.min(100, Math.max(30, base + (rnd.nextGaussian() * 10)));
                     performanceRepo.save(new Performance(null, s, subjects[si], exams[ei],
                             Math.round(score * 10.0) / 10.0, 100.0,
-                            LocalDate.of(2026, 7 + ei, 10 + si), recBy[si]));
+                            LocalDate.of(2026, 7 + ei, 10 + (si % 18)), recBy[si]));
                 }
             }
         }

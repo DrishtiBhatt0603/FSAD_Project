@@ -3,18 +3,15 @@ import Navbar from '../components/Navbar';
 import api from '../api/axios';
 import useClasses from '../hooks/useClasses';
 
-const FEE_TYPES = ['Tuition Fee','Exam Fee','Library Fee','Sports Fee','Lab Fee','Transport Fee'];
-
 export default function FeePayment() {
   const { classes } = useClasses();
   const [students,  setStudents]  = useState([]);
-  const [form,      setForm]      = useState({ studentId:'', feeType:'Tuition Fee', amount:'' });
+  const [form,      setForm]      = useState({ studentId:'' });
   const [payments,  setPayments]  = useState([]);
   const [studentFees, setStudentFees] = useState([]);
   const [filterClass, setFilterClass] = useState('');
   const [msg,   setMsg]   = useState('');
   const [error, setError] = useState('');
-  const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const loadPayments = () => api.get('/fees').then(r => setPayments(r.data));
@@ -34,22 +31,6 @@ export default function FeePayment() {
 
   const refreshStudentFees = () => {
     if (form.studentId) api.get(`/fees/student/${form.studentId}`).then(r => setStudentFees(r.data));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSubmitting(true); setMsg(''); setError('');
-    try {
-      await api.post('/fees', form);
-      setMsg('Payment processed successfully! Receipt generated.');
-      setForm({ studentId: form.studentId, feeType:'Tuition Fee', amount:'' });
-      loadPayments();
-      refreshStudentFees();
-    } catch {
-      setError('Fee processing failed. Please try again.');
-    } finally {
-      setSubmitting(false);
-    }
   };
 
   const handleMarkPaid = async (id) => {
@@ -150,57 +131,47 @@ export default function FeePayment() {
         <h2 style={styles.heading}>Fee Payment</h2>
         <div style={styles.mainGrid}>
 
-          {/* Left: Form */}
+          {/* Left: Student fee detail */}
           <div style={styles.formCard}>
-            <h3 style={styles.sub}>Process Payment</h3>
+            <h3 style={styles.sub}>Student Fee Detail</h3>
             {msg   && <div style={styles.success}>{msg}</div>}
             {error && <div style={styles.error}>{error}</div>}
-            <form onSubmit={handleSubmit}>
-              <Field label="Student *">
-                <select style={styles.input} value={form.studentId}
-                  onChange={e => setForm({...form, studentId: e.target.value})} required>
-                  <option value="">— Select Student —</option>
-                  {students.map(s => (
-                    <option key={s.id} value={s.id}>{s.name} ({s.className})</option>
-                  ))}
-                </select>
-              </Field>
+            <Field label="Select Student">
+              <select style={styles.input} value={form.studentId}
+                onChange={e => setForm({ studentId: e.target.value })}>
+                <option value="">— Select a student —</option>
+                {students.map(s => (
+                  <option key={s.id} value={s.id}>{s.name} ({s.className})</option>
+                ))}
+              </select>
+            </Field>
 
-              {/* Student fee summary */}
-              {form.studentId && (
-                <div style={styles.feeSummary}>
-                  <div style={styles.feeSum}>
-                    <span>Paid</span>
-                    <strong style={{color:'#2e7d32'}}>₹{totalPaid.toLocaleString()}</strong>
-                  </div>
-                  <div style={styles.feeSum}>
-                    <span>Pending</span>
-                    <strong style={{color: totalPending > 0 ? '#c62828' : '#2e7d32'}}>
-                      ₹{totalPending.toLocaleString()}
-                    </strong>
-                  </div>
-                  <div style={styles.feeSum}>
-                    <span>Transactions</span>
-                    <strong>{studentFees.length}</strong>
-                  </div>
+            {!form.studentId && (
+              <p style={{ fontSize:13, color:'#888', marginTop:12, lineHeight:1.5 }}>
+                Pick a student to see their fee status and payment history. To bill or collect
+                fees, use the matrix on the right — click any cell.
+              </p>
+            )}
+
+            {/* Student fee summary */}
+            {form.studentId && (
+              <div style={styles.feeSummary}>
+                <div style={styles.feeSum}>
+                  <span>Paid</span>
+                  <strong style={{color:'#2e7d32'}}>₹{totalPaid.toLocaleString()}</strong>
                 </div>
-              )}
-
-              <Field label="Fee Type *">
-                <select style={styles.input} value={form.feeType}
-                  onChange={e => setForm({...form, feeType: e.target.value})}>
-                  {FEE_TYPES.map(t => <option key={t}>{t}</option>)}
-                </select>
-              </Field>
-              <Field label="Amount (₹) *">
-                <input style={styles.input} type="number" value={form.amount}
-                  onChange={e => setForm({...form, amount: e.target.value})}
-                  required min="1" placeholder="Enter amount" />
-              </Field>
-              <button style={styles.btn} type="submit" disabled={submitting}>
-                {submitting ? 'Processing…' : '✓ Process Payment'}
-              </button>
-            </form>
+                <div style={styles.feeSum}>
+                  <span>Pending</span>
+                  <strong style={{color: totalPending > 0 ? '#c62828' : '#2e7d32'}}>
+                    ₹{totalPending.toLocaleString()}
+                  </strong>
+                </div>
+                <div style={styles.feeSum}>
+                  <span>Transactions</span>
+                  <strong>{studentFees.length}</strong>
+                </div>
+              </div>
+            )}
 
             {/* Fee status across all fee types — answers "has this student paid everything?" */}
             {form.studentId && schoolFeeTypes.length > 0 && (
