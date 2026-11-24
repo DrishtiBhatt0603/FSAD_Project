@@ -1,13 +1,17 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import Navbar from '../components/Navbar';
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [overview,     setOverview]     = useState(null);
   const [recentAdm,    setRecentAdm]    = useState([]);
+  const [totalAdm,     setTotalAdm]     = useState(0);
   const [recentFees,   setRecentFees]   = useState([]);
+  const [totalFees,    setTotalFees]    = useState(0);
   const [todayAttend,  setTodayAttend]  = useState({ present:0, total:0 });
   const [recentPerf,   setRecentPerf]   = useState([]);
 
@@ -17,8 +21,14 @@ export default function Dashboard() {
       api.get('/analysis/overview').then(r => setOverview(r.data)).catch(() => {});
     }
     if (role === 'ADMIN' || role === 'CLERK') {
-      api.get('/admissions').then(r => setRecentAdm(r.data.slice(-5).reverse())).catch(() => {});
-      api.get('/fees').then(r => setRecentFees(r.data.slice(-5).reverse())).catch(() => {});
+      api.get('/admissions').then(r => {
+        setTotalAdm(r.data.length);
+        setRecentAdm(r.data.slice(-5).reverse());
+      }).catch(() => {});
+      api.get('/fees').then(r => {
+        setTotalFees(r.data.length);
+        setRecentFees(r.data.slice(-5).reverse());
+      }).catch(() => {});
     }
     if (role === 'ADMIN' || role === 'TEACHER') {
       const today = new Date().toISOString().split('T')[0];
@@ -45,10 +55,14 @@ export default function Dashboard() {
         {/* ADMIN / PRINCIPAL: KPI cards */}
         {overview && (
           <div style={styles.kpiGrid}>
-            <KpiCard title="Total Students"    value={overview.totalStudents}                             icon="👨‍🎓" color="#1a237e" />
-            <KpiCard title="Attendance Rate"   value={`${overview.attendanceRate}%`}                     icon="✅" color="#2e7d32" />
-            <KpiCard title="Avg Score"         value={`${overview.averageScore}%`}                       icon="📊" color="#e65100" />
-            <KpiCard title="Fees Collected"    value={`₹${overview.totalFeesCollected?.toLocaleString()}`} icon="💰" color="#6a1b9a" />
+            <KpiCard title="Total Students"    value={overview.totalStudents}                             icon="👨‍🎓" color="#1a237e"
+              hint="View all students" onClick={() => navigate('/reports?tab=admissions')} />
+            <KpiCard title="Attendance Rate"   value={`${overview.attendanceRate}%`}                     icon="✅" color="#2e7d32"
+              hint="View attendance" onClick={() => navigate('/analysis')} />
+            <KpiCard title="Avg Score"         value={`${overview.averageScore}%`}                       icon="📊" color="#e65100"
+              hint="View performance" onClick={() => navigate('/analysis')} />
+            <KpiCard title="Fees Collected"    value={`₹${overview.totalFeesCollected?.toLocaleString()}`} icon="💰" color="#6a1b9a"
+              hint="View fee collection" onClick={() => navigate('/reports?tab=fees')} />
           </div>
         )}
 
@@ -56,20 +70,25 @@ export default function Dashboard() {
         {user?.role === 'TEACHER' && (
           <div style={styles.kpiGrid}>
             <KpiCard title="Present Today"
-              value={todayAttend.present} icon="✅" color="#2e7d32" />
+              value={todayAttend.present} icon="✅" color="#2e7d32"
+              hint="Go to attendance" onClick={() => navigate('/attendance')} />
             <KpiCard title="Absent Today"
-              value={todayAttend.total - todayAttend.present} icon="❌" color="#c62828" />
+              value={todayAttend.total - todayAttend.present} icon="❌" color="#c62828"
+              hint="Go to attendance" onClick={() => navigate('/attendance')} />
             <KpiCard title="Attendance %"
               value={todayAttend.total ? `${Math.round(todayAttend.present/todayAttend.total*100)}%` : 'N/A'}
-              icon="📋" color="#1a237e" />
+              icon="📋" color="#1a237e"
+              hint="Go to attendance" onClick={() => navigate('/attendance')} />
           </div>
         )}
 
         {/* CLERK: today's summary */}
         {user?.role === 'CLERK' && (
           <div style={styles.kpiGrid}>
-            <KpiCard title="Total Admissions" value={recentAdm.length > 0 ? '…' : 0} icon="📋" color="#1a237e" />
-            <KpiCard title="Recent Fees" value={recentFees.length} icon="💳" color="#2e7d32" />
+            <KpiCard title="Total Admissions" value={totalAdm} icon="📋" color="#1a237e"
+              hint="View admissions" onClick={() => navigate('/admission')} />
+            <KpiCard title="Total Fee Records" value={totalFees} icon="💳" color="#2e7d32"
+              hint="Go to fee payment" onClick={() => navigate('/fees')} />
           </div>
         )}
 
@@ -168,13 +187,36 @@ export default function Dashboard() {
   );
 }
 
-function KpiCard({ title, value, icon, color }) {
+function KpiCard({ title, value, icon, color, hint, onClick }) {
+  const [hover, setHover] = useState(false);
+  const clickable = typeof onClick === 'function';
   return (
-    <div style={{ background:'#fff', borderRadius:8, padding:'20px 24px',
-                  boxShadow:'0 2px 8px rgba(0,0,0,0.08)', borderTop:`4px solid ${color}` }}>
-      <div style={{ fontSize:28, marginBottom:4 }}>{icon}</div>
+    <div
+      onClick={onClick}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      role={clickable ? 'button' : undefined}
+      tabIndex={clickable ? 0 : undefined}
+      onKeyDown={clickable ? (e) => { if (e.key === 'Enter' || e.key === ' ') onClick(); } : undefined}
+      style={{
+        background:'#fff', borderRadius:10, padding:'20px 22px',
+        boxShadow: hover && clickable ? '0 6px 18px rgba(0,0,0,0.14)' : '0 2px 8px rgba(0,0,0,0.08)',
+        borderTop:`4px solid ${color}`,
+        cursor: clickable ? 'pointer' : 'default',
+        transform: hover && clickable ? 'translateY(-3px)' : 'none',
+        transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+      }}>
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
+        <div style={{ fontSize:28, marginBottom:4 }}>{icon}</div>
+        {clickable && <span style={{ fontSize:16, color: hover ? color : '#bbb' }}>›</span>}
+      </div>
       <div style={{ fontSize:26, fontWeight:'bold', color, marginBottom:4 }}>{value}</div>
       <div style={{ fontSize:13, color:'#666' }}>{title}</div>
+      {clickable && (
+        <div style={{ fontSize:11, color: hover ? color : '#aaa', marginTop:8, fontWeight:600 }}>
+          {hint} →
+        </div>
+      )}
     </div>
   );
 }
@@ -185,8 +227,8 @@ const styles = {
   heading: { fontSize:24, color:'#1a237e', margin:0 },
   sub: { color:'#666', margin:'4px 0 0', fontSize:14 },
   dateBadge: { background:'#e8eaf6', color:'#1a237e', padding:'8px 18px', borderRadius:20, fontSize:14, fontWeight:600 },
-  kpiGrid: { display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(200px,1fr))', gap:16, marginBottom:24 },
-  cardRow: { display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px,1fr))', gap:20 },
+  kpiGrid: { display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(210px,1fr))', gap:16, marginBottom:24 },
+  cardRow: { display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(280px,1fr))', gap:20, alignItems:'start' },
   guideCard: { background:'#fff', borderRadius:8, padding:'20px 24px', boxShadow:'0 2px 8px rgba(0,0,0,0.08)' },
   recentCard: { background:'#fff', borderRadius:8, padding:'20px 24px', boxShadow:'0 2px 8px rgba(0,0,0,0.08)' },
   cardTitle: { fontSize:14, fontWeight:700, color:'#1a237e', marginBottom:14, margin:'0 0 14px' },

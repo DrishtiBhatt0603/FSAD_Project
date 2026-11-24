@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "fee_payments")
@@ -23,7 +24,8 @@ public class FeePayment {
     private Double amount;
     private LocalDate paymentDate;
     private String feeType;
-    private String status;
+    private String status;          // PAID | PENDING | BILLED
+    private LocalDateTime billedAt;  // when a bill was issued (for the grace-period → PENDING transition)
 
     @ManyToOne
     @JoinColumn(name = "processed_by")

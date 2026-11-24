@@ -125,12 +125,12 @@ public class DataSeeder implements CommandLineRunner {
 
         for (Student s : allStudents) {
             // Tuition fee — everyone pays
-            feeRepo.save(new FeePayment(null, s, 5000.0, LocalDate.of(2026,6,10), "Tuition Fee", "PAID", clerk1));
+            feeRepo.save(new FeePayment(null, s, 5000.0, LocalDate.of(2026,6,10), "Tuition Fee", "PAID", null, clerk1));
             // Random extra fee for ~70% students
             if (rnd.nextDouble() < 0.7) {
                 int idx = 1 + rnd.nextInt(4);
                 String status = rnd.nextDouble() < 0.75 ? "PAID" : "PENDING";
-                feeRepo.save(new FeePayment(null, s, feeAmts[idx], LocalDate.of(2026,7,15), feeTypes[idx], status, clerk2));
+                feeRepo.save(new FeePayment(null, s, feeAmts[idx], LocalDate.of(2026,7,15), feeTypes[idx], status, null, clerk2));
             }
         }
 
@@ -229,7 +229,8 @@ public class DataSeeder implements CommandLineRunner {
                                         User clerk, LocalDate admDate) {
         List<Student> result = new ArrayList<>();
         for (String[] row : data) {
-            Student s = studentRepo.save(new Student(null, row[0], row[1], row[2], cls, section, row[3], admDate, null, null));
+            String email = row[0].toLowerCase().replaceAll("[^a-z ]", "").trim().replace(" ", ".") + "@example.com";
+            Student s = studentRepo.save(new Student(null, row[0], row[1], row[2], cls, section, row[3], admDate, email, null));
             admissionRepo.save(new Admission(null, s, clerk, admDate, "APPROVED"));
             result.add(s);
         }

@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import api from '../api/axios';
 import useClasses from '../hooks/useClasses';
 
 export default function Reports() {
   const { classes } = useClasses();
-  const [tab,         setTab]        = useState('admissions');
+  const [searchParams] = useSearchParams();
+  const initialTab = ['admissions','syllabus','fees'].includes(searchParams.get('tab'))
+    ? searchParams.get('tab') : 'admissions';
+  const [tab,         setTab]        = useState(initialTab);
   const [admissions,  setAdmissions] = useState([]);
   const [syllabus,    setSyllabus]   = useState([]);
   const [fees,        setFees]       = useState([]);
