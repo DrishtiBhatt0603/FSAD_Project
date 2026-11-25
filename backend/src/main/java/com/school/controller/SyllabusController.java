@@ -4,6 +4,7 @@ import com.school.entity.Syllabus;
 import com.school.entity.User;
 import com.school.repository.SyllabusRepository;
 import com.school.repository.UserRepository;
+import com.school.security.TeacherScope;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,11 +20,15 @@ public class SyllabusController {
 
     @Autowired private SyllabusRepository syllabusRepo;
     @Autowired private UserRepository userRepo;
+    @Autowired private TeacherScope teacherScope;
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER','PRINCIPAL')")
-    public List<Syllabus> getAll() {
-        return syllabusRepo.findAll();
+    public List<Syllabus> getAll(Authentication auth) {
+        String cls = teacherScope.restrictedClass(auth);
+        List<Syllabus> all = syllabusRepo.findAll();
+        if (cls == null) return all;
+        return all.stream().filter(s -> cls.equals(s.getClassName())).toList();
     }
 
     @GetMapping("/class/{className}")

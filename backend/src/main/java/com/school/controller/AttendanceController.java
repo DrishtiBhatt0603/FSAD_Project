@@ -6,6 +6,7 @@ import com.school.entity.User;
 import com.school.repository.AttendanceRepository;
 import com.school.repository.StudentRepository;
 import com.school.repository.UserRepository;
+import com.school.security.TeacherScope;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,17 +23,27 @@ public class AttendanceController {
     @Autowired private AttendanceRepository attendanceRepo;
     @Autowired private StudentRepository studentRepo;
     @Autowired private UserRepository userRepo;
+    @Autowired private TeacherScope teacherScope;
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER','PRINCIPAL')")
-    public List<Attendance> getAll() {
-        return attendanceRepo.findAll();
+    public List<Attendance> getAll(Authentication auth) {
+        return scope(attendanceRepo.findAll(), auth);
     }
 
     @GetMapping("/date/{date}")
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER','PRINCIPAL')")
-    public List<Attendance> getByDate(@PathVariable String date) {
-        return attendanceRepo.findByDate(LocalDate.parse(date));
+    public List<Attendance> getByDate(@PathVariable String date, Authentication auth) {
+        return scope(attendanceRepo.findByDate(LocalDate.parse(date)), auth);
+    }
+
+    // Restrict a teacher to their own class's attendance
+    private List<Attendance> scope(List<Attendance> list, Authentication auth) {
+        String cls = teacherScope.restrictedClass(auth);
+        if (cls == null) return list;
+        return list.stream()
+                .filter(a -> a.getStudent() != null && cls.equals(a.getStudent().getClassName()))
+                .toList();
     }
 
     @GetMapping("/student/{studentId}")

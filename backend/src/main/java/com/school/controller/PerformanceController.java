@@ -6,6 +6,7 @@ import com.school.entity.User;
 import com.school.repository.PerformanceRepository;
 import com.school.repository.StudentRepository;
 import com.school.repository.UserRepository;
+import com.school.security.TeacherScope;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,11 +23,15 @@ public class PerformanceController {
     @Autowired private PerformanceRepository performanceRepo;
     @Autowired private StudentRepository studentRepo;
     @Autowired private UserRepository userRepo;
+    @Autowired private TeacherScope teacherScope;
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER','PRINCIPAL')")
-    public List<Performance> getAll() {
-        return performanceRepo.findAll();
+    public List<Performance> getAll(Authentication auth) {
+        String cls = teacherScope.restrictedClass(auth);
+        List<Performance> all = performanceRepo.findAll();
+        if (cls == null) return all;
+        return all.stream().filter(p -> cls.equals(p.getStudent() != null ? p.getStudent().getClassName() : null)).toList();
     }
 
     @GetMapping("/student/{studentId}")

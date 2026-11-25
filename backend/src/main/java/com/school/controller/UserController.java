@@ -35,11 +35,15 @@ public class UserController {
         if (userRepo.findByUsername(body.get("username")).isPresent()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Username already exists"));
         }
+        User.Role role = User.Role.valueOf(body.get("role"));
+        // Only a class teacher carries an assigned class
+        String assignedClass = role == User.Role.TEACHER ? body.get("assignedClass") : null;
         User u = new User(null,
                 body.get("name"),
                 body.get("username"),
                 encoder.encode(body.get("password")),
-                User.Role.valueOf(body.get("role")));
+                role,
+                (assignedClass != null && assignedClass.isBlank()) ? null : assignedClass);
         return ResponseEntity.ok(userRepo.save(u));
     }
 

@@ -49,7 +49,7 @@ export default function Login() {
         <div style={styles.hint}>
           <strong>Demo credentials:</strong><br />
           admin / admin123 | principal / principal123<br />
-          clerk1 / clerk123 | teacher1 / teacher123
+          teacher1 / teacher123 (class teacher of 8A)
         </div>
       </div>
     </div>

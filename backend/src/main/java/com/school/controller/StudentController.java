@@ -2,9 +2,11 @@ package com.school.controller;
 
 import com.school.entity.Student;
 import com.school.repository.StudentRepository;
+import com.school.security.TeacherScope;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -13,16 +15,22 @@ import java.util.List;
 public class StudentController {
 
     @Autowired private StudentRepository repo;
+    @Autowired private TeacherScope teacherScope;
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','CLERK','TEACHER','PRINCIPAL')")
-    public List<Student> getAll() {
-        return repo.findAll();
+    public List<Student> getAll(Authentication auth) {
+        String cls = teacherScope.restrictedClass(auth);
+        List<Student> all = repo.findAll();
+        if (cls == null) return all;
+        return all.stream().filter(s -> cls.equals(s.getClassName())).toList();
     }
 
     @GetMapping("/classes")
     @PreAuthorize("hasAnyRole('ADMIN','CLERK','TEACHER','PRINCIPAL')")
-    public List<String> getClasses() {
+    public List<String> getClasses(Authentication auth) {
+        String cls = teacherScope.restrictedClass(auth);
+        if (cls != null) return List.of(cls);
         return repo.findAll().stream()
                 .map(Student::getClassName)
                 .filter(c -> c != null && !c.isBlank())

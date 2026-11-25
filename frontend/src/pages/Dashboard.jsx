@@ -47,7 +47,11 @@ export default function Dashboard() {
         <div style={styles.welcome}>
           <div>
             <h2 style={styles.heading}>Welcome back, {user?.name}!</h2>
-            <p style={styles.sub}>Role: <strong>{user?.role}</strong></p>
+            <p style={styles.sub}>
+              Role: <strong>{user?.role}</strong>
+              {user?.role === 'TEACHER' && user?.assignedClass
+                ? <> · Class Teacher of <strong>{user.assignedClass}</strong></> : null}
+            </p>
           </div>
           <div style={styles.dateBadge}>{new Date().toDateString()}</div>
         </div>
@@ -124,7 +128,6 @@ export default function Dashboard() {
             {user?.role === 'PRINCIPAL' && (
               <ul style={styles.list}>
                 <li>View <strong>Analysis</strong> for attendance trends and performance charts</li>
-                <li>Open <strong>Class Schedule</strong> to manage the weekly timetable</li>
                 <li>Use <strong>Reports</strong> and hit <em>Print</em> to export any report</li>
               </ul>
             )}

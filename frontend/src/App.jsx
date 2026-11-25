@@ -8,7 +8,6 @@ import FeePayment from './pages/FeePayment';
 import Attendance from './pages/Attendance';
 import Syllabus from './pages/Syllabus';
 import Performance from './pages/Performance';
-import ClassSchedule from './pages/ClassSchedule';
 import Reports from './pages/Reports';
 import Analysis from './pages/Analysis';
 import Users from './pages/Users';
@@ -27,7 +26,6 @@ export default function App() {
           <Route path="/attendance" element={<ProtectedRoute allowedRoles={['ADMIN','TEACHER']}><Attendance /></ProtectedRoute>} />
           <Route path="/syllabus" element={<ProtectedRoute allowedRoles={['ADMIN','TEACHER']}><Syllabus /></ProtectedRoute>} />
           <Route path="/performance" element={<ProtectedRoute allowedRoles={['ADMIN','TEACHER']}><Performance /></ProtectedRoute>} />
-          <Route path="/schedule" element={<ProtectedRoute allowedRoles={['ADMIN','PRINCIPAL']}><ClassSchedule /></ProtectedRoute>} />
           <Route path="/reports" element={<ProtectedRoute allowedRoles={['ADMIN','PRINCIPAL']}><Reports /></ProtectedRoute>} />
           <Route path="/analysis" element={<ProtectedRoute allowedRoles={['ADMIN','PRINCIPAL']}><Analysis /></ProtectedRoute>} />
           <Route path="/users" element={<ProtectedRoute allowedRoles={['ADMIN']}><Users /></ProtectedRoute>} />

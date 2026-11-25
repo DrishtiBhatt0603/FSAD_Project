@@ -4,6 +4,7 @@ import com.school.entity.*;
 import com.school.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import java.time.LocalDate;
@@ -14,6 +15,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Component
+@Order(1) // seed data first; TeacherAssignmentInitializer (@Order 2) assigns classes after
 public class DataSeeder implements CommandLineRunner {
 
     @Autowired private UserRepository userRepo;
@@ -243,7 +245,7 @@ public class DataSeeder implements CommandLineRunner {
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private User u(String name, String username, String password, User.Role role) {
-        return userRepo.save(new User(null, name, username, encoder.encode(password), role));
+        return userRepo.save(new User(null, name, username, encoder.encode(password), role, null));
     }
 
     private List<Student> seedStudents(String[][] data, String cls, String section,

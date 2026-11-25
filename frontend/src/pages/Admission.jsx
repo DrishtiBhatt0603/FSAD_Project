@@ -3,26 +3,17 @@ import Navbar from '../components/Navbar';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import useClasses from '../hooks/useClasses';
+import { prevClassLabel, buildPrevPerf } from '../utils/helpers';
 
-const INIT = { name:'', parentName:'', address:'', className:'', section:'A',
+const INIT = { name:'', parentName:'', address:'', classNum:'', section:'A',
                previousClassPerformance:'', email:'', phone:'' };
-
-// Extract the numeric grade from a class name like "10A" → 10, "9B" → 9
-function prevClassLabel(className) {
-  const num = parseInt(className);
-  return isNaN(num) ? '' : `${num - 1}th`;
-}
-
-// Build the full previousClassPerformance string from className + percentage input
-function buildPrevPerf(className, pct) {
-  if (!pct) return '';
-  return `${prevClassLabel(className)} - ${pct}%`;
-}
 
 export default function Admission() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
   const { classes } = useClasses();
+  // Derive unique class numbers (8, 9, 10) from existing classes — no A/B in the datalist
+  const classNumbers = [...new Set(classes.map(c => parseInt(c)).filter(n => !isNaN(n)))].sort((a,b)=>a-b).map(String);
   const [tab,         setTab]         = useState('new');
   const [form,        setForm]        = useState(INIT);
   const [prevPct,     setPrevPct]     = useState('');   // just the % number user types
@@ -45,7 +36,8 @@ export default function Admission() {
       return;
     }
     setLoading(true); setMsg(''); setError('');
-    const payload = { ...form, previousClassPerformance: buildPrevPerf(form.className, prevPct) };
+    const className = form.classNum + form.section;
+    const payload = { ...form, className, previousClassPerformance: buildPrevPerf(className, prevPct) };
     try {
       const { data } = await api.post('/admissions', payload);
       setMsg(`Admission successful! Student: ${data.student.name} | ID: ${data.student.id}`);
@@ -117,22 +109,22 @@ export default function Admission() {
                     onChange={e => setForm({...form, phone: e.target.value})} placeholder="10-digit mobile number" />
                 </Field>
                 <Field label="Class *">
-                  <input style={styles.input} list="class-options" value={form.className}
-                    onChange={e => { setForm({...form, className: e.target.value}); setPrevPct(''); }}
-                    required placeholder="Select or type a new class e.g. 10A" />
+                  <input style={styles.input} list="class-options" value={form.classNum}
+                    onChange={e => { setForm({...form, classNum: e.target.value}); setPrevPct(''); }}
+                    required placeholder="e.g. 10" />
                   <datalist id="class-options">
-                    {classes.map(c => <option key={c} value={c} />)}
+                    {classNumbers.map(n => <option key={n} value={n} />)}
                   </datalist>
                 </Field>
-                <Field label="Section">
+                <Field label="Section *">
                   <select style={styles.input} value={form.section}
                     onChange={e => setForm({...form, section: e.target.value})}>
-                    <option>A</option><option>B</option><option>C</option>
+                    <option>A</option><option>B</option>
                   </select>
                 </Field>
-                <Field label={`Previous Class Performance (${prevClassLabel(form.className)})`}>
+                <Field label={`Previous Class Performance (${prevClassLabel(form.classNum + form.section)})`}>
                   <div style={styles.prevPerfRow}>
-                    <span style={styles.prevPerfLabel}>{prevClassLabel(form.className)} —</span>
+                    <span style={styles.prevPerfLabel}>{prevClassLabel(form.classNum + form.section)} —</span>
                     <input
                       style={{...styles.input, flex:1}}
                       type="number" min="0" max="100" step="0.1"

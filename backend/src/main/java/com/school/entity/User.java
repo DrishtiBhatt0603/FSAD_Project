@@ -28,6 +28,9 @@ public class User {
     @Column(nullable = false)
     private Role role;
 
+    // For a class teacher: the single class they own (e.g. "8A"). Null for other roles.
+    private String assignedClass;
+
     public enum Role {
         ADMIN, CLERK, TEACHER, PRINCIPAL
     }

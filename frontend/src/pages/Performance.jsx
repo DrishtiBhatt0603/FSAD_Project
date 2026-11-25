@@ -3,18 +3,10 @@ import Navbar from '../components/Navbar';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import useClasses from '../hooks/useClasses';
+import { grade } from '../utils/helpers';
 
 const DEFAULT_SUBJECTS = ['Mathematics','Science','English','Hindi','Social Studies','Computer Science'];
 const EXAMS    = ['Unit Test 1','Mid Term','Unit Test 2','Final Exam'];
-
-function grade(pct) {
-  if (pct >= 90) return { letter:'A+', color:'#1b5e20', bg:'#e8f5e9' };
-  if (pct >= 80) return { letter:'A',  color:'#2e7d32', bg:'#f1f8e9' };
-  if (pct >= 70) return { letter:'B',  color:'#1565c0', bg:'#e3f2fd' };
-  if (pct >= 60) return { letter:'C',  color:'#e65100', bg:'#fff3e0' };
-  if (pct >= 45) return { letter:'D',  color:'#b71c1c', bg:'#fce4ec' };
-  return                 { letter:'F',  color:'#c62828', bg:'#ffebee' };
-}
 
 export default function Performance() {
   const { user } = useAuth();

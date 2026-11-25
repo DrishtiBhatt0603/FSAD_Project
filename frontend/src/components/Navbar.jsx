@@ -2,8 +2,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const NAV_LINKS = {
-  ADMIN:     ['dashboard','admission','fees','attendance','syllabus','performance','schedule','reports','analysis','users'],
-  PRINCIPAL: ['dashboard','schedule','reports','analysis'],
+  ADMIN:     ['dashboard','admission','fees','attendance','syllabus','performance','reports','analysis','users'],
+  PRINCIPAL: ['dashboard','reports','analysis'],
   CLERK:     ['dashboard','admission','fees'],
   TEACHER:   ['dashboard','attendance','syllabus','performance'],
 };
@@ -15,7 +15,6 @@ const LABELS = {
   attendance:  'Attendance',
   syllabus:    'Syllabus',
   performance: 'Performance',
-  schedule:    'Class Schedule',
   reports:     'Reports',
   analysis:    'Analysis',
   users:       'Users',
